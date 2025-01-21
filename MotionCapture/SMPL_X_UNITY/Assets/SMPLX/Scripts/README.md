@@ -6,7 +6,7 @@
 * 10개의 IMU 센서(Xsens AWINDA)를 활용, 아바타로는 SMPL-X 모델을 활용했으며 Unity3D 환경에서 스크립트를 통하여 제어.
 
 ### Pipeline
-![pipeline.png](source_img/pipeline.png)
+![pipeline.png](source_img/Pipeline.png)
 * XsensMaange.cs: 유니티와 하드웨어 센서의 연결 후 데이터 수신 및 갱신을 진행.
 * Playscript.cs: 수신된 센서데이터를 이용하여 아바타의 관절 회전 값을 정의하고, Heading Reset, T-pose calibration을 통해 아바타의 포즈 추정에 필요한 최종 회전 값을 계산 및 전달.
 * SMPLX.cs(기존 파일 일부 수정): 아바타에 대한 관절인덱스 정보 및 회전 정보를 아바타에 적용.
@@ -20,7 +20,7 @@
 ![Xsensmanage.png](source_img/XsensManage.png)
 
 ### playscript.cs
-![playscript.png](source_img/playscript.png)
+![playscript.png](source_img/Playscript.png)
 
 ### SMPLX.cs
 ![SMPLX.png](source_img/SMPLX.png)
