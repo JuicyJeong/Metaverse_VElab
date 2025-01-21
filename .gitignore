@@ -46,7 +46,7 @@ ExportedObj/
 *.mdb
 *.opendb
 *.VC.db
-*.png
+.png
 *.mat
 
 # Unity3D generated meta files
@@ -77,7 +77,7 @@ crashlytics-build.properties
 *.wav
 *.ttf
 *.meta
-*.md
+.md
 *.csv
 *.json
 *.vsconfig
