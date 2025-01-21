@@ -81,6 +81,7 @@ crashlytics-build.properties
 *.csv
 *.json
 *.vsconfig
+*.DS_Store
 /MotionCapture/SMPL_X_UNITY/Assets/Materials/
 /MotionCapture/SMPL_X_UNITY/Assets/Scenes/
 /MotionCapture/SMPL_X_UNITY/Assets/SMPLX-Validation/

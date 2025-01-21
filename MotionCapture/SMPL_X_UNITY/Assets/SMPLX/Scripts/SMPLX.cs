@@ -20,8 +20,6 @@ using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
-using System.IO;
-
 #endif
 
 // Joint recalculation
@@ -36,7 +34,6 @@ public class SMPLX : MonoBehaviour
     public enum ModelType {Unknown, Female, Neutral, Male};
     public enum HandPose {Flat, Relaxed};
     public enum BodyPose {T, A};
-    public enum TotalCap {Pose1, Pose2};
 
     public ModelType modelType = ModelType.Unknown;
 
@@ -58,64 +55,15 @@ public class SMPLX : MonoBehaviour
     private Vector3[] _jointPositions = null;
     private Quaternion[] _jointRotations = null;
 
-    string[] _bodyJointNames = new string[] { "pelvis","left_hip","right_hip","spine1","left_knee","right_knee",
-                                                "spine2","left_ankle","right_ankle","spine3", "left_foot","right_foot","neck",
-                                                "left_collar","right_collar","head","left_shoulder","right_shoulder","left_elbow", 
-                                                "right_elbow","left_wrist","right_wrist","jaw","left_eye_smplhf","right_eye_smplhf",
-                                                "left_index1","left_index2","left_index3","left_middle1","left_middle2","left_middle3",
-                                                "left_pinky1","left_pinky2","left_pinky3","left_ring1","left_ring2","left_ring3",
-                                                "left_thumb1","left_thumb2","left_thumb3","right_index1","right_index2","right_index3",
-                                                "right_middle1","right_middle2","right_middle3","right_pinky1","right_pinky2","right_pinky3",
-                                                "right_ring1","right_ring2","right_ring3","right_thumb1","right_thumb2","right_thumb3" };
-
+    string[] _bodyJointNames = new string[] { "pelvis","left_hip","right_hip","spine1","left_knee","right_knee","spine2","left_ankle","right_ankle","spine3", "left_foot","right_foot","neck","left_collar","right_collar","head","left_shoulder","right_shoulder","left_elbow", "right_elbow","left_wrist","right_wrist","jaw","left_eye_smplhf","right_eye_smplhf","left_index1","left_index2","left_index3","left_middle1","left_middle2","left_middle3","left_pinky1","left_pinky2","left_pinky3","left_ring1","left_ring2","left_ring3","left_thumb1","left_thumb2","left_thumb3","right_index1","right_index2","right_index3","right_middle1","right_middle2","right_middle3","right_pinky1","right_pinky2","right_pinky3","right_ring1","right_ring2","right_ring3","right_thumb1","right_thumb2","right_thumb3" };
     string[] _handLeftJointNames = new string[] { "left_index1","left_index2","left_index3","left_middle1","left_middle2","left_middle3","left_pinky1","left_pinky2","left_pinky3","left_ring1","left_ring2","left_ring3","left_thumb1","left_thumb2","left_thumb3" } ;
     string[] _handRightJointNames = new string[] { "right_index1","right_index2","right_index3","right_middle1","right_middle2","right_middle3","right_pinky1","right_pinky2","right_pinky3","right_ring1","right_ring2","right_ring3","right_thumb1","right_thumb2","right_thumb3" } ;
     float[] _handFlatLeft = new float[] { 0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f };
     float[] _handFlatRight = new float[] { 0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f };
     float[] _handRelaxedLeft = new float[] { 0.11167871206998825f,0.042892176657915115f,-0.41644182801246643f,0.10881132632493973f,-0.06598567962646484f,-0.7562199831008911f,-0.09639296680688858f,-0.09091565757989883f,-0.18845929205417633f,-0.1180950403213501f,0.050943851470947266f,-0.529584527015686f,-0.14369840919971466f,0.055241700261831284f,-0.7048571109771729f,-0.01918291673064232f,-0.09233684837818146f,-0.33791351318359375f,-0.4570329785346985f,-0.1962839514017105f,-0.6254575252532959f,-0.21465237438678741f,-0.06599828600883484f,-0.5068942308425903f,-0.3697243630886078f,-0.060344625264406204f,-0.07949022948741913f,-0.1418696939945221f,-0.08585263043642044f,-0.6355282664299011f,-0.3033415973186493f,-0.05788097530603409f,-0.6313892006874084f,-0.17612089216709137f,-0.13209307193756104f,-0.37335458397865295f,0.8509643077850342f,0.27692273259162903f,-0.09154807031154633f,-0.4998394250869751f,0.02655647136271f,0.05288087576627731f,0.5355591773986816f,0.04596104100346565f,-0.2773580253124237f };
-    float[] _handRelaxedRight = new float[] { 0.11167871206998825f, -0.042892176657915115f, 0.41644182801246643f, 0.10881132632493973f, 0.06598567962646484f, 0.7562199831008911f, -0.09639296680688858f, 0.09091565757989883f, 0.18845929205417633f, -0.1180950403213501f, -0.050943851470947266f, 0.529584527015686f, -0.14369840919971466f, -0.055241700261831284f, 0.7048571109771729f, -0.01918291673064232f, 0.09233684837818146f, 0.33791351318359375f, -0.4570329785346985f, 0.1962839514017105f, 0.6254575252532959f, -0.21465237438678741f, 0.06599828600883484f, 0.5068942308425903f, -0.3697243630886078f, 0.060344625264406204f, 0.07949022948741913f, -0.1418696939945221f, 0.08585263043642044f, 0.6355282664299011f, -0.3033415973186493f, 0.05788097530603409f, 0.6313892006874084f, -0.17612089216709137f, 0.13209307193756104f, 0.37335458397865295f, 0.8509643077850342f, -0.27692273259162903f, 0.09154807031154633f, -0.4998394250869751f, -0.02655647136271f, -0.05288087576627731f, 0.5355591773986816f, -0.04596104100346565f, 0.2773580253124237f };
-    
-    float[] _hand_TotalCap = new float[]
-    {
-        0.1116787156904433f, 0.04289217484104639f, -0.416441836812446f, 0.10881132513711185f, -0.06598567887822672f,
-       -0.7562200100001023f, -0.09639296514009964f, -0.09091565922041477f, -0.1884592906970161f, -0.11809503934386675f,
-        0.05094385260705536f, -0.529584499976084f, -0.14369840869244882f, 0.05524170001527844f, -0.7048571406917286f,
-       -0.019182916839865817f, -0.09233684821597642f, -0.3379135244947721f, -0.4570329833266365f, -0.196283945164882f,
-       -0.6254575328442732f, -0.21465237881086022f, -0.06599828649166892f, -0.5068942070038754f, -0.36972435736649994f,
-       -0.06034462636097786f, -0.07949022787634757f, -0.14186969453172138f, -0.08585263331718808f, -0.6355282566897771f,
-       -0.3033415874850632f, -0.05788097522832921f, -0.6313892099233043f, -0.1761208850183806f, -0.13209307627166406f,
-       -0.37335457646458126f, 0.8509642789706306f, 0.2769227420650918f, -0.09154806978240376f, -0.49983943762160615f,
-        0.026556472160458842f, 0.05288087673273013f, 0.5355591477841196f, 0.04596104095518329f, -0.2773580212595622f,
+    float[] _handRelaxedRight = new float[] { 0.11167871206998825f,-0.042892176657915115f,0.41644182801246643f,0.10881132632493973f,0.06598567962646484f,0.7562199831008911f,-0.09639296680688858f,0.09091565757989883f,0.18845929205417633f,-0.1180950403213501f,-0.050943851470947266f,0.529584527015686f,-0.14369840919971466f,-0.055241700261831284f,0.7048571109771729f,-0.01918291673064232f,0.09233684837818146f,0.33791351318359375f,-0.4570329785346985f,0.1962839514017105f,0.6254575252532959f,-0.21465237438678741f,0.06599828600883484f,0.5068942308425903f,-0.3697243630886078f,0.060344625264406204f,0.07949022948741913f,-0.1418696939945221f,0.08585263043642044f,0.6355282664299011f,-0.3033415973186493f,0.05788097530603409f,0.6313892006874084f,-0.17612089216709137f,0.13209307193756104f,0.37335458397865295f,0.8509643077850342f,-0.27692273259162903f,0.09154807031154633f,-0.4998394250869751f,-0.02655647136271f,-0.05288087576627731f,0.5355591773986816f,-0.04596104100346565f,0.2773580253124237f };
 
-        0.1116787156904433f, -0.04289217484104638f, 0.41644183681244606f, 0.10881132513711185f, 0.0659856788782267f,
-        0.7562200100001023f, -0.09639296514009964f, 0.09091565922041477f, 0.18845929069701614f, -0.11809503934386674f,
-       -0.05094385260705537f, 0.529584499976084f, -0.14369840869244885f, -0.05524170001527845f, 0.7048571406917286f,
-       -0.01918291683986582f, 0.09233684821597642f, 0.3379135244947721f, -0.4570329833266365f, 0.19628394516488204f,
-        0.6254575328442732f, -0.21465237881086027f, 0.06599828649166892f, 0.5068942070038754f, -0.36972435736649994f,
-        0.06034462636097784f, 0.07949022787634759f, -0.14186969453172144f, 0.08585263331718808f, 0.6355282566897771f,
-       -0.3033415874850632f, 0.05788097522832922f, 0.6313892099233043f, -0.17612088501838064f, 0.13209307627166406f,
-        0.37335457646458126f, 0.8509642789706306f, -0.2769227420650918f, 0.09154806978240378f, -0.49983943762160615f,
-       -0.026556472160458842f, -0.05288087673273012f, 0.5355591477841195f, -0.0459610409551833f, 0.2773580212595623f
-    };
-
-    float[] _bodyPose_TotalCap = new float[] //360 프레임 동작
-    {
-        0.2508107632484311f, 0.03216074242810782f, 0.10912917936014355f, -0.31800420820850267f, -0.0012811404627807756f,
-        0.023556043542668534f, 0.13524424691654952f, -0.04924968551764046f, 0.045695597027839964f, 0.4659097664667112f,
-       -0.32726184152712734f, 0.0008502115086684362f, 0.317273427987009f, -0.1273294300909277f, 0.02323712854297955f,
-        0.024007342125742587f, -0.008887174850699729f, 0.017597460419262714f, -0.19442258953887961f, 0.16201394363015706f,
-       -0.032453225373093385f, -0.11262586263052105f, -0.22718388008885637f, 0.046026537706329494f, 0.07292777066643467f,
-       -0.024766267094683873f, 0.02229179113394267f,   0.0f                , 0.0f                 , 0.0f                ,
-        0.0f                 , 0.0f                ,   0.0f                , 0.023866591171002746f, 0.03356046648076521f,
-       -0.001046146685077119f, 0.0211055313418709f, -0.008567407351046823f, -0.2897909794391707f, 0.013427340277648069f,
-        0.005479770950440317f, 0.31066192848488167f,-0.11341250548766953f, 0.01406268156609005f, 0.06362080830112839f,
-        0.09710963417329717f, -0.2991691202488064f, -0.9181692335452595f, 0.13854412879598682f, 0.15677339440120422f,
-        0.9692313904527288f, 0.3188469056929627f, -0.5035933006236596f, 0.017498089619854443f, 0.09957737849046583f,
-        0.38766734819338555f,-0.12601337019364003f,-0.102503082811151f, -0.07793541600493292f, 0.15846093388161703f,
-       -0.0609614106287764f, 0.007995267655383687f,-0.05143216441521378f
-    };
-
-    public Dictionary<string, Transform> _transformFromName;
+    Dictionary<string, Transform> _transformFromName;
 
     // Joint recalculation
     public static Dictionary<string, Matrix[]> JointMatrices = null;
@@ -337,28 +285,18 @@ public class SMPLX : MonoBehaviour
         joint.localRotation = quatLocal;
     }
 
+    public void SetWorldJointRotation(string name, Quaternion quatWorld) //CustromJointRotation function1 - KHB
+    {
+        Transform joint = _transformFromName[name];
+        //joint.rotation = quatWorld;
+        joint.rotation = Quaternion.Inverse(Quaternion.Euler(180.0f, 0.0f, 0.0f)) * quatWorld * new Quaternion(0.0f, 0.0f, 1.0f, 0.0f);
+    }
 
     public void SetWorld2LocalJointRotation(string name, Quaternion quatWorld) //CustromJointRotation function2 - KHB
     {
         Transform joint = _transformFromName[name];
         Transform jointParent = joint.parent;
-
-        joint.localRotation = Quaternion.Inverse(jointParent.rotation) * Quaternion.Inverse(Quaternion.Euler(180.0f, 0.0f, 0.0f)) * quatWorld * new Quaternion(0.0f, 0.0f, 1.0f, 0.0f);//original
-        //joint.localRotation = Quaternion.Inverse(jointParent.rotation) * quatWorld * Quaternion.Euler(0.0f, 180.0f, 0.0f);
-        
-        //joint.localRotation = Quaternion.Inverse(jointParent.rotation) * quatWorld;// * new Quaternion(0.0f, 0.0f, 1.0f, 0.0f) * new Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
-    }
-
-    public Vector3 PrintLocalRotation(string name)
-    {
-        Transform joint = _transformFromName[name];
-        //Debug.LogFormat("{0}의 로컬 회전 값\nW: {1}, X: {2}, Y: {3}, Z: {4}", name, joint.localRotation.w, joint.localRotation.x, joint.localRotation.y, joint.localRotation.z);
-        return joint.localEulerAngles;
-    }
-    public void PrintLocalPosition(string name)
-    {
-        Transform joint = _transformFromName[name];
-        Debug.LogFormat("{0}의 로컬 위치 값\nX: {1}, Y: {2}, Z: {3}", name, joint.position.x, joint.position.y, joint.position.z);
+        joint.localRotation = Quaternion.Inverse(jointParent.rotation) * Quaternion.Inverse(Quaternion.Euler(180.0f, 0.0f, 0.0f)) * quatWorld * new Quaternion(0.0f, 0.0f, 1.0f, 0.0f);
     }
 
     public void SetHandPose(HandPose pose)
@@ -591,22 +529,12 @@ public class SMPLX : MonoBehaviour
         return true;
     }
 
-
-    /*
-    {"pelvis","spine2","right_shoulder","right_elbow", "left_shoulder","left_elbow","right_hip","right_knee","left_hip","left_knee" }
-    */
-   
     // Update is called once per frame
-
     void Update()
     {
-        //평소에는 안쓰이는 구간.
         if (!usePoseCorrectives)
             UpdatePoseCorrectives();
-
-        
     }
-     
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -828,20 +756,6 @@ public class SMPLX_Editor : Editor {
                     if (GUILayout.Button("Relaxed"))
                     {
                         _target.SetHandPose(SMPLX.HandPose.Relaxed);
-                    }
-                    EditorGUILayout.EndHorizontal();
-
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("TotalCap", GUILayout.Width(100));
-                    if (GUILayout.Button("    Pose1   "))
-                    {
-                        _target.SetHandPose(SMPLX.HandPose.Flat); //임시
-                        //_target.SetHandPose(SMPLX.TotalCap.Pose1); // 대충 SetBodyPose랑 비슷한 내용이 들어갈 예정
-                    }
-                    if (GUILayout.Button("    Pose2   "))
-                    {
-                        _target.SetHandPose(SMPLX.HandPose.Relaxed); //임시
-                        //_target.SetHandPose(SMPLX.TotalCap.Pose2);
                     }
                     EditorGUILayout.EndHorizontal();
                 }

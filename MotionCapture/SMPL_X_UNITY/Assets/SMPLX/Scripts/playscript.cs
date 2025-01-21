@@ -1,14 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.UI;
 using UnityEngine;
 using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.IO;
+
 
 
 
@@ -21,36 +20,21 @@ public class playscript : MonoBehaviour
     public GameObject smpldata;
 
     //JEONG JINWOO NEW VAR 
-    string[] _Senser10JointNames = new string[] {
-                                                    "pelvis", "spine2",
-                                                    "right_shoulder", "right_elbow",
-                                                    "left_shoulder", "left_elbow",
-                                                    "right_hip", "right_knee",
+    string[] _Senser10JointNames = new string[] { 
+                                                    "pelvis", "spine2", 
+                                                    "right_shoulder", "right_elbow", 
+                                                    "left_shoulder", "left_elbow", 
+                                                    "right_hip", "right_knee", 
                                                     "left_hip", "left_knee" };
-    string[] _Senser8JointNames_UP_RIGHT_PART = new string[] {
-                                                    "pelvis", "spine1","spine2","spine3",
-                                                    "right_collar","right_shoulder", "right_elbow","right_wrist","right_hip","left_hip"}; // 뒤의 두개는 더미.
-    string[] _Senser8JointNames_UP_LEFT_PART = new string[] {
-                                                    "pelvis", "spine1","spine2","spine3",
-                                                    "left_collar","left_shoulder", "left_elbow","left_wrist","right_hip","left_hip"};// 뒤의 두개는 더미.
     int number_of_IMU = 10;
-    public bool is_play_avatar = false;
-    bool is_printPoint = false;
+    bool is_play_avatar = false;
     double QW1, QX1, QY1, QZ1;
-
-    bool is_wait_calibration = false;
-    int cali_waiting_counter = 0;
-
-    List<float> coordinate_X = new List<float>{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
-    List<float> coordinate_Y= new List<float> { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
-    List<float> coordinate_Z = new List<float> { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
-
+    List<float> coordinate_Z = new List<float>
+    {
+        0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f
+    };
     Vector3 CoordinateRotate = new Vector3(0.0f,0.0f,0.0f);
-    Vector3 QuatToEuler = new Vector3(0.0f, 0.0f, 0.0f);
-
-
-
-    Quaternion temp_quaternion;
+    Quaternion q0;
     List<Quaternion> sensorQuatList = new List<Quaternion>
     {
         new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
@@ -77,82 +61,40 @@ public class playscript : MonoBehaviour
         new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
         new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
     };
-
-    List<Quaternion> final_Input_List = new List<Quaternion>
-    {
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-        new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-    };
     // for save csv
     List<string[]> csvSaveData = new List<string[]>();
     string[] tempQuat;
     bool is_recording = false;
 
-
     //JEONG JINWOO NEW VAR
-    public void GET_SENSOR_QDATA() 
+    public void GET_SENSOR_QDATA() // 오른손만 추적할 거라서 센서 두개만 들고 옵니다. 풀 트래킹할거면 다른 함수 쓰던가 반복문 쓰던가
     {
 
 
         sensordata = GameObject.Find("Xsens");
-        smpldata = GameObject.Find("smplx-neutral-se"); //다른 모델을 불러오기도 가능하게 함
-
         //number_of_IMU = sensordata.GetComponent<XsensManage>().sensors.Count;
-        number_of_IMU = 6;
+        number_of_IMU = 1;
 
-
-        for (int i = 0; i < number_of_IMU; i++)
+        for (int i = 0; i < number_of_IMU; i++)// 여기서 1개만 할 수 있게 변경
         {
             QW1 = sensordata.GetComponent<XsensManage>().sensors[i].QuatW;
             QX1 = sensordata.GetComponent<XsensManage>().sensors[i].QuatX;
             QY1 = sensordata.GetComponent<XsensManage>().sensors[i].QuatY;
             QZ1 = sensordata.GetComponent<XsensManage>().sensors[i].QuatZ;
 
-            temp_quaternion.w = (float)QW1; 
-            temp_quaternion.x = (float)QX1; 
-            temp_quaternion.y = (float)QY1; 
-            temp_quaternion.z = (float)QZ1;
-            
-            sensorQuatList[i] = temp_quaternion;
+            q0.w = (float)QW1; q0.x = (float)QX1; q0.y = (float)QY1; q0.z = (float)QZ1;                                    
+            sensorQuatList[i] = q0;
 
 
-            if (is_play_avatar)
-            {
-
-                Quaternion coord = Quaternion.Euler(-90.0f, 180.0f, 0.0f);//ORIGINAL
-                Quaternion coord_I = Quaternion.Inverse(coord);
-                Quaternion heading_reset = Quaternion.Euler(-coordinate_X[i], -coordinate_Z[i], -coordinate_Y[i]);
-                Quaternion heading_reset_I = Quaternion.Inverse(heading_reset);
-
-                final_Input_List[i] = heading_reset * coord * sensorQuatList[i] * sensorQuatCaliList[i] * coord_I * heading_reset_I;
-
-                smpldata.GetComponent<SMPLX>().SetWorld2LocalJointRotation(_Senser10JointNames[i],
-                    heading_reset * coord * sensorQuatList[i] * sensorQuatCaliList[i] * coord_I * heading_reset_I);
-
-            }
             if (is_recording)
             {
                 if (i == 0)
                 {
-                    tempQuat = new string[24];
-                    //tempQuat = new string[18];
+                    tempQuat = new string[40];
                 }
 
-                tempQuat[4 * i + 0] = final_Input_List[i].w.ToString();
-                tempQuat[4 * i + 1] = final_Input_List[i].x.ToString();
-                tempQuat[4 * i + 2] = final_Input_List[i].y.ToString();
-                tempQuat[4 * i + 3] = final_Input_List[i].z.ToString();
-
-
-                if (i == number_of_IMU-1)
+                tempQuat[4 * i + 0] = q0.w.ToString(); tempQuat[4 * i + 1] = q0.x.ToString(); tempQuat[4 * i + 2] = q0.y.ToString(); tempQuat[4 * i + 3] = q0.z.ToString();
+                if (i == 9)
                 {
                     csvSaveData.Add(tempQuat);
 
@@ -160,15 +102,31 @@ public class playscript : MonoBehaviour
             }
         }
 
+        if (is_play_avatar)
+        {
+            smpldata = GameObject.Find("smplx-female");
+
+            for (int i = 0; i < number_of_IMU; i++)
+
+            {
+                Quaternion coord = Quaternion.Euler(-90.0f, 180.0f - coordinate_Z[i], 0.0f);
+                Quaternion coord_I = Quaternion.Inverse(coord);
+                smpldata.GetComponent<SMPLX>().SetWorld2LocalJointRotation(_Senser10JointNames[i], coord * sensorQuatList[i] * sensorQuatCaliList[i] * coord_I);
+
+            }
+            // 여기에 입력하기 
+
+        }
+
 
     }
-    private void SaveCSV()// 
+    private void SaveCSV()
     {
 
         DateTime now = DateTime.Now; // 현재 날짜와 시간 가져오기
         string dateTimeString = now.ToString("MM_dd_HH_mm_ss");
         Debug.Log(dateTimeString);
-        string file_Name = dateTimeString + "_OUTPUT.csv";// 경로 폴더 변경하기.
+        string file_Name = dateTimeString + "_OUTPUT.csv";
         string filePath = file_Name; // 저장할 파일 경로 및 이름
         StreamWriter sw = new StreamWriter(filePath, true); // true: 기존 파일에 이어 쓰기
         foreach (string[] row in csvSaveData)
@@ -186,7 +144,7 @@ public class playscript : MonoBehaviour
             sensorQuatCaliList[i] = Quaternion.Inverse(sensorQuatList[i]);
         }
     }
-    public void ALIGN_COORDINATE() //IMU Heading reset.
+    public void ALIGN_COORDINATE() // Heading reset.
     {
         Debug.Log("Coordinate Aligned.");
 
@@ -204,9 +162,6 @@ public class playscript : MonoBehaviour
                                                                         CoordinateRotate.y,
                                                                         CoordinateRotate.z);
             //모든 센서의 align 정보를 입력.
-
-            coordinate_X[i] = CoordinateRotate.x;
-            coordinate_Y[i] = CoordinateRotate.y;
             coordinate_Z[i] = CoordinateRotate.z;
 
         }
@@ -225,10 +180,6 @@ public class playscript : MonoBehaviour
         // S : 아바타 움직이는 거 시작.
 
 
-        if (Input.GetKeyDown(KeyCode.O)) 
-        {
-            is_printPoint = true;
-        }
         if (Input.GetKeyDown(KeyCode.Comma))
         {
             Debug.Log("Keyboard: , is pressed.\n녹화를 시작합니다.");
@@ -244,12 +195,7 @@ public class playscript : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.C))
         {
             Debug.Log("Keyboard: C is pressed.\n T-Pose 상태의 센서 정보를 저장하였습니다.");
-            //혼자서 T포즈를 위해 지연시간 추가.
-          
-            Debug.Log("포즈를 취해주십시오...");
-            //GET_CALIB_POSE();
-
-
+            GET_CALIB_POSE();
             for (int i = 0; i < number_of_IMU; i++)
             {
                 Debug.LogFormat("{0}번 센서 캘리브레이션: W: {1}, X: {2}, Y: {3}, Z: {4}",
@@ -271,7 +217,7 @@ public class playscript : MonoBehaviour
             Debug.Log("Keyboard: P is pressed.\nPrint all Sensor Data in Euler Angle.");
             for (int i = 0; i < number_of_IMU; i++)
             {
-                Vector3 Print_current_ori = Quaternion.ToEulerAngles(sensorQuatList[i] * sensorQuatCaliList[i]);
+                Vector3 Print_current_ori = Quaternion.ToEulerAngles(sensorQuatList[i]);
                 CoordinateRotate.x = (float)ConvertRadiansToDegrees(Print_current_ori.x);
                 CoordinateRotate.y = (float)ConvertRadiansToDegrees(Print_current_ori.y);
                 CoordinateRotate.z = (float)ConvertRadiansToDegrees(Print_current_ori.z);
@@ -281,15 +227,7 @@ public class playscript : MonoBehaviour
                                                                            CoordinateRotate.x,
                                                                             CoordinateRotate.y,
                                                                             CoordinateRotate.z);
-
-                //Vector3 xyzprint =  smpldata.GetComponent<SMPLX>().PrintLocalRotation(_Senser8JointNames_UP_RIGHT_PART[i]);
-                //Debug.LogFormat("{0}부분 회전 값: X: {1}, Y: {2}, Z: {3}", _Senser8JointNames_UP_RIGHT_PART[i],
-
-                //                                                           xyzprint.x,
-                //                                                            xyzprint.y,
-                //                                                            xyzprint.z);
             }
-
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
@@ -303,6 +241,7 @@ public class playscript : MonoBehaviour
         Debug.Log("Playerscript 실행 되었습니다.");
         timer = 0.0f;
         waitingTime = 0.01667f;
+        //waitingTime = 2.0f;
     }
 
     // Update is called once per frame
@@ -314,22 +253,6 @@ public class playscript : MonoBehaviour
         if (timer > waitingTime)
         {
             GET_SENSOR_QDATA();
-
-            //여기에서 tpsoe 지연시간 추가
-            if (is_wait_calibration)
-            {
-                cali_waiting_counter++;
-                Debug.Log("자세를 취해주세요.");
-            }
-            if (cali_waiting_counter > 300)
-            {
-                GET_CALIB_POSE();
-                Debug.Log("캘리브레이션 완료!");
-
-                cali_waiting_counter = 0;
-                is_wait_calibration = false;
-            }
-
             timer = 0;
         }
 
